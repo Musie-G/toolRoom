@@ -1,0 +1,1057 @@
+/* ============================================
+   Toolroom Management System - Main Styles
+   Ethiopian Airlines
+   been working on this for a while now
+   ============================================ */
+
+/* ------------------------------------------------------------------
+   CSS RESET & VARIABLES
+   i should probably use a proper reset but this works
+------------------------------------------------------------------ */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    /* brand colors - from the ethiopian flag */
+    --primary-green: #00843D;
+    --primary-gold: #FDB913;
+    --primary-red: #ED1C24;
+
+    /* dark mode - stole these from a template */
+    --dark-bg: #0a0f1a;
+    --dark-surface: #151b2b;
+    --dark-card: #1e2738;
+    --dark-border: #2d3748;
+    --dark-text: #e2e8f0;
+    --dark-text-secondary: #94a3b8;
+
+    /* light mode (default) */
+    --light-bg: #f8fafc;
+    --light-surface: #ffffff;
+    --light-card: #ffffff;
+    --light-border: #e2e8f0;
+    --light-text: #1e293b;
+    --light-text-secondary: #64748b;
+
+    /* status colors - keep these consistent */
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #3b82f6;
+
+    /* shadows and transitions */
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ------------------------------------------------------------------
+   BASE STYLES
+------------------------------------------------------------------ */
+body {
+    font-family: 'Inter', sans-serif;
+    background: var(--light-bg);
+    color: var(--light-text);
+    transition: var(--transition);
+    overflow-x: hidden;
+    line-height: 1.6;
+}
+
+body.dark-mode {
+    background: var(--dark-bg);
+    color: var(--dark-text);
+}
+
+/* dark mode table overrides - took me a while to get right */
+body.dark-mode table th {
+    background: rgba(0, 132, 61, 0.2);
+}
+
+body.dark-mode table td {
+    border-bottom-color: var(--dark-border);
+}
+
+body.dark-mode .form-group input,
+body.dark-mode .form-group select,
+body.dark-mode .form-group textarea {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+    color: var(--dark-text);
+}
+
+/* ------------------------------------------------------------------
+   FOUC FIX - hides content until JS is ready
+   prevents that ugly flash on page load
+------------------------------------------------------------------ */
+body.js-loading .page {
+    display: none;
+}
+body.js-loading .top-bar,
+body.js-loading .sidebar {
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+/* ------------------------------------------------------------------
+   SIDEBAR - this was a pain to get right
+------------------------------------------------------------------ */
+.sidebar {
+    position: fixed;
+    left: 0;
+    top: 0;
+    width: 280px;
+    height: 100vh;
+    background: var(--light-surface);
+    border-right: 1px solid var(--light-border);
+    padding: 20px;
+    transition: var(--transition);
+    z-index: 1000;
+    overflow-y: auto;
+    box-shadow: var(--shadow);
+}
+
+body.dark-mode .sidebar {
+    background: var(--dark-surface);
+    border-right-color: var(--dark-border);
+}
+
+/* collapsed sidebar - hides text, shows only icons */
+.sidebar.collapsed {
+    width: 80px;
+}
+.sidebar.collapsed .logo-text {
+    display: none;
+}
+.sidebar.collapsed .nav-text {
+    display: none;
+}
+.sidebar.collapsed .nav-link {
+    justify-content: center;
+    padding: 12px 0;
+    gap: 0;
+}
+
+/* mobile sidebar - slides in from left */
+@media (max-width: 768px) {
+    .sidebar {
+        transform: translateX(-100%);
+    }
+    .sidebar.active {
+        transform: translateX(0);
+    }
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 15px;
+    margin-bottom: 30px;
+    border-bottom: 2px solid var(--primary-green);
+}
+
+.logo {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, var(--primary-green), var(--primary-gold));
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+#navMenu {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.nav-icon {
+    font-size: 20px;
+    width: 24px;
+    text-align: center;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 14px 18px;
+    color: var(--light-text-secondary);
+    text-decoration: none;
+    border-radius: 12px;
+    transition: var(--transition);
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.nav-link.hidden-by-role {
+    display: none !important;
+}
+
+.nav-link:hover,
+.nav-link.active {
+    background: rgba(0, 132, 61, 0.1);
+    color: var(--primary-green);
+    transform: translateX(5px);
+    font-weight: 600;
+}
+
+/* ------------------------------------------------------------------
+   MAIN CONTENT AREA
+------------------------------------------------------------------ */
+.main-content {
+    margin-left: 280px;
+    padding: 30px;
+    transition: margin-left 0.3s ease;
+    min-height: 100vh;
+}
+
+.main-content.collapsed-margin {
+    margin-left: 80px;
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        margin-left: 0;
+    }
+    .main-content.collapsed-margin {
+        margin-left: 0;
+    }
+}
+
+/* ------------------------------------------------------------------
+   PAGE TRANSITIONS - simple fade in
+------------------------------------------------------------------ */
+.page {
+    display: none;
+    animation: fadeIn 0.4s ease;
+}
+
+.page.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+/* ------------------------------------------------------------------
+   TOP BAR
+------------------------------------------------------------------ */
+.top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 35px;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.page-title h1 {
+    font-size: 32px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary-green), var(--primary-gold));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.icon-btn {
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    border: none;
+    background: var(--light-card);
+    color: var(--light-text);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: var(--transition);
+    box-shadow: var(--shadow);
+}
+
+.icon-btn:hover {
+    background: var(--primary-green);
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* ------------------------------------------------------------------
+   CARDS & GRIDS
+------------------------------------------------------------------ */
+.card {
+    background: var(--light-card);
+    border-radius: 16px;
+    padding: 25px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--light-border);
+    margin-bottom: 25px;
+}
+
+body.dark-mode .card {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+/* ============================================
+   DASHBOARD STATS CARDS
+   spent way too much time making these look nice
+   ============================================ */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 28px;
+    margin-bottom: 40px;
+}
+
+.stat-card {
+    position: relative;
+    background: var(--light-card);
+    border-radius: 24px;
+    padding: 28px 20px 24px;
+    text-align: center;
+    transition: all 0.3s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+    border: 1px solid var(--light-border);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+    backdrop-filter: blur(2px);
+}
+
+.stat-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 30px -12px rgba(0, 0, 0, 0.15);
+    border-color: var(--primary-green);
+    background: linear-gradient(145deg, var(--light-card), rgba(0, 132, 61, 0.02));
+}
+
+/* colored top bar on each card */
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    background: linear-gradient(90deg, var(--primary-green), var(--primary-gold), var(--primary-red));
+    transition: height 0.2s;
+}
+
+.stat-card:hover::before {
+    height: 6px;
+}
+
+.stat-card i {
+    font-size: 2.8rem;
+    background: linear-gradient(135deg, var(--primary-green), var(--primary-gold));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    margin-bottom: 12px;
+    display: inline-block;
+    transition: transform 0.2s;
+}
+
+.stat-card:hover i {
+    transform: scale(1.05);
+}
+
+.stat-card h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--light-text-secondary);
+    margin-bottom: 12px;
+    margin-top: 0;
+}
+
+.stat-value {
+    font-size: 3rem;
+    font-weight: 800;
+    line-height: 1.1;
+    background: linear-gradient(135deg, var(--light-text), var(--primary-green));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.05);
+    margin-top: 0;
+    letter-spacing: -0.5px;
+}
+
+/* different colors for different stats */
+#dashInUse {
+    background: linear-gradient(135deg, var(--warning), #ffb347);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+#dashAvail {
+    background: linear-gradient(135deg, var(--success), #34d399);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+#dashMaint {
+    background: linear-gradient(135deg, var(--danger), #f87171);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+#dashOverdue {
+    background: linear-gradient(135deg, var(--danger), #f97316);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+#dashLost {
+    background: linear-gradient(135deg, #6b7280, #9ca3af);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+#dashDamage {
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+/* dark mode stats adjustments */
+body.dark-mode .stat-card {
+    background: var(--dark-card);
+    border-color: var(--dark-border);
+}
+body.dark-mode .stat-card:hover {
+    background: linear-gradient(145deg, var(--dark-card), rgba(0, 132, 61, 0.05));
+}
+body.dark-mode .stat-value {
+    background: linear-gradient(135deg, var(--dark-text), var(--primary-green));
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+body.dark-mode .stat-card i {
+    background: linear-gradient(135deg, var(--primary-green), var(--primary-gold));
+    -webkit-background-clip: text;
+    background-clip: text;
+}
+
+/* ------------------------------------------------------------------
+   CHECKOUT LAYOUT - two columns on desktop
+------------------------------------------------------------------ */
+.checkout-grid {
+    display: grid;
+    grid-template-columns: 1fr 400px;
+    gap: 30px;
+}
+
+@media (max-width: 1024px) {
+    .checkout-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ------------------------------------------------------------------
+   STATUS BADGES
+------------------------------------------------------------------ */
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.status-available  { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+.status-in-use     { background: rgba(245, 158, 11, 0.1);  color: var(--warning); }
+.status-maintenance{ background: rgba(239, 68, 68, 0.1);   color: var(--danger);  }
+.status-lost       { background: rgba(128, 128, 128, 0.1); color: #666; }
+.status-admin      { background: rgba(59, 130, 246, 0.1);  color: var(--info); }
+.status-toolkeeper { background: rgba(0, 132, 61, 0.1);    color: var(--primary-green); }
+.status-technician { background: rgba(253, 185, 19, 0.1);  color: var(--primary-gold);  }
+
+/* ------------------------------------------------------------------
+   TABLES
+------------------------------------------------------------------ */
+.table-container {
+    overflow-x: auto;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    padding: 15px;
+    text-align: left;
+    font-weight: 600;
+    color: var(--primary-green);
+    border-bottom: 2px solid var(--light-border);
+    background: rgba(0, 132, 61, 0.05);
+}
+
+td {
+    padding: 15px;
+    border-bottom: 1px solid var(--light-border);
+    vertical-align: middle;
+}
+
+/* ------------------------------------------------------------------
+   FORMS
+------------------------------------------------------------------ */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid var(--light-border);
+    border-radius: 8px;
+    background: var(--light-bg);
+    color: var(--light-text);
+    outline: none;
+    transition: all 0.3s;
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 3px rgba(0, 132, 61, 0.2);
+}
+
+/* date inputs - explicit styling so they behave consistently cross-browser */
+.form-group input[type="date"] {
+    cursor: pointer;
+    position: relative;
+    /* needed on webkit browsers or the calendar icon gets clipped */
+    padding-right: 8px;
+}
+
+/* force date picker to render above everything else */
+input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.7;
+    position: relative;
+    z-index: 9999;
+}
+
+/* make sure selects show the dropdown arrow properly */
+.form-group select {
+    appearance: auto;
+    -webkit-appearance: auto;
+    cursor: pointer;
+}
+
+/* ------------------------------------------------------------------
+   BUTTONS
+------------------------------------------------------------------ */
+.btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: var(--transition);
+    font-family: inherit;
+    font-size: 14px;
+}
+
+.btn-primary  { background: var(--primary-green); color: white; }
+.btn-secondary{ background: var(--light-border);  color: var(--light-text); }
+.btn-danger   { background: var(--danger);         color: white; }
+.btn-warning  { background: var(--warning);        color: white; }
+.btn-success  { background: var(--success);        color: white; }
+
+.action-btn {
+    padding: 6px 10px;
+    font-size: 14px;
+    border-radius: 6px;
+    margin-right: 5px;
+}
+.action-btn-edit   { background: var(--info);   color: white; }
+.action-btn-delete { background: var(--danger); color: white; }
+
+/* ------------------------------------------------------------------
+   MODALS
+   THE KEY FIX:
+   - .modal handles the fullscreen overlay and centering
+   - .modal-content is the white box
+   - overflow-y: auto goes on .modal, NOT .modal-content
+   - .modal-content must NOT have overflow:hidden or overflow:auto
+     because that creates a new stacking context that clips native
+     <select> dropdowns and date picker popups
+   - max-height + scrolling on .modal-content is handled via
+     the inner .modal-scroll-body wrapper instead
+------------------------------------------------------------------ */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 2000;
+    align-items: flex-start;
+    justify-content: center;
+    /* scroll goes here, not on .modal-content */
+    overflow-y: auto;
+    padding: 40px 20px;
+    /* NOTE: no backdrop-filter here - it creates a stacking context
+       that clips native date pickers and select dropdowns */
+}
+
+.modal.active {
+    display: flex;
+}
+
+.modal-content {
+    background: var(--light-card);
+    width: 90%;
+    max-width: 600px;
+    padding: 30px;
+    border-radius: 20px;
+    position: relative;
+    margin: auto;
+    /* NO overflow: hidden/auto - clips date pickers */
+    /* NO transform - creates stacking context that clips date pickers */
+    /* NO backdrop-filter - same problem */
+}
+
+body.dark-mode .modal-content {
+    background: var(--dark-card);
+}
+
+.close-modal {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: var(--light-text-secondary);
+    line-height: 1;
+    padding: 4px;
+    z-index: 1;
+}
+
+.close-modal:hover {
+    color: var(--danger);
+}
+
+/* ------------------------------------------------------------------
+   SETTINGS PAGE - this section grew organically
+------------------------------------------------------------------ */
+.settings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 20px;
+}
+
+.permission-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    background: var(--light-bg);
+    border-radius: 8px;
+    margin-bottom: 8px;
+}
+
+body.dark-mode .permission-item {
+    background: var(--dark-bg);
+}
+
+.permission-item label {
+    margin-bottom: 0;
+    cursor: pointer;
+}
+
+.permission-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.threshold-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+.threshold-item label {
+    min-width: 220px;
+    font-size: 14px;
+    font-weight: 500;
+}
+.threshold-item input,
+.threshold-item select {
+    width: 120px;
+    padding: 8px 10px;
+    border: 1px solid var(--light-border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    background: var(--light-bg);
+    color: var(--light-text);
+}
+
+.notification-method {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--light-border);
+}
+.notification-method input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+.notification-method label {
+    min-width: 80px;
+    font-weight: 500;
+}
+
+.backup-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px;
+    background: var(--light-bg);
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+body.dark-mode .backup-item {
+    background: var(--dark-bg);
+}
+.backup-info {
+    flex: 1;
+}
+.backup-info small {
+    color: var(--light-text-secondary);
+    display: block;
+    margin-top: 5px;
+}
+
+.tag {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: 10px;
+}
+.tag-success { background: rgba(16, 185, 129, 0.1); color: var(--success); }
+.tag-warning { background: rgba(245, 158, 11, 0.1);  color: var(--warning); }
+
+.role-config {
+    border: 1px solid var(--light-border);
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+.role-config h4 {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+.role-icon {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    flex-shrink: 0;
+}
+.role-icon.admin      { background: var(--info); }
+.role-icon.toolkeeper { background: var(--primary-green); }
+.role-icon.technician { background: var(--warning); }
+
+/* toggle switch - copied from a tutorial */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+    flex-shrink: 0;
+}
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #ccc;
+    transition: 0.4s;
+    border-radius: 24px;
+}
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 20px;
+    width: 20px;
+    left: 2px;
+    bottom: 2px;
+    background-color: white;
+    transition: 0.4s;
+    border-radius: 50%;
+}
+input:checked + .slider {
+    background-color: var(--primary-green);
+}
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+.settings-section {
+    margin-top: 30px;
+    border-top: 1px solid var(--light-border);
+    padding-top: 20px;
+}
+.settings-section:first-of-type {
+    margin-top: 0;
+    border-top: none;
+    padding-top: 0;
+}
+
+.text-danger {
+    color: var(--danger);
+    font-size: 12px;
+    display: block;
+    margin-top: 5px;
+}
+
+.sort-buttons {
+    display: flex;
+    gap: 10px;
+}
+.sort-btn {
+    background: var(--light-bg);
+    border: 1px solid var(--light-border);
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: var(--transition);
+    font-family: inherit;
+}
+.sort-btn:hover {
+    background: var(--primary-green);
+    color: white;
+    border-color: var(--primary-green);
+}
+
+/* ------------------------------------------------------------------
+   UTILITY
+------------------------------------------------------------------ */
+.text-muted {
+    color: var(--light-text-secondary);
+    font-style: italic;
+    font-size: 13px;
+}
+
+/* audit log - added later, hence at the bottom */
+.audit-empty {
+    padding: 40px;
+    text-align: center;
+    color: var(--light-text-secondary);
+    font-style: italic;
+}
+
+.audit-entry {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--light-border);
+    transition: background 0.2s;
+}
+
+.audit-entry:hover {
+    background: rgba(0, 132, 61, 0.05);
+}
+
+.audit-time {
+    font-size: 11px;
+    color: var(--light-text-secondary);
+    margin-bottom: 4px;
+    font-family: monospace;
+}
+
+.audit-action {
+    font-size: 14px;
+    color: var(--light-text);
+    word-break: break-word;
+}
+
+body.dark-mode .audit-entry {
+    border-bottom-color: var(--dark-border);
+}
+body.dark-mode .audit-entry:hover {
+    background: rgba(0, 132, 61, 0.1);
+}
+
+/* checkin table */
+.return-btn {
+    padding: 5px 10px;
+    font-size: 12px;
+}
+.return-btn:hover {
+    background: var(--primary-green);
+    color: white;
+}
+
+.overdue-text {
+    color: var(--danger);
+    font-weight: bold;
+}
+
+/* selected row highlight */
+.checkin-select:checked {
+    accent-color: var(--primary-green);
+}
+tr:has(.checkin-select:checked) {
+    background: rgba(0, 132, 61, 0.05);
+}
+body.dark-mode tr:has(.checkin-select:checked) {
+    background: rgba(0, 132, 61, 0.15);
+}
+
+/* checkout checkboxes */
+.tool-select {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--primary-green);
+}
+.tool-select:hover {
+    transform: scale(1.1);
+}
+tr:has(.tool-select:checked) {
+    background: rgba(0, 132, 61, 0.05);
+}
+body.dark-mode tr:has(.tool-select:checked) {
+    background: rgba(0, 132, 61, 0.15);
+}
+
+/* checkout summary panel */
+.selected-list {
+    max-height: 120px;
+    overflow-y: auto;
+    padding: 8px;
+    border: 1px dashed var(--light-border);
+    border-radius: 8px;
+    font-size: 13px;
+    background: var(--light-bg);
+}
+body.dark-mode .selected-list {
+    background: var(--dark-bg);
+    border-color: var(--dark-border);
+}
+
+/* checkout form */
+#checkoutForm {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+#checkoutForm .form-group {
+    margin-bottom: 0;
+}
+
+/* employee action buttons */
+.action-btn {
+    padding: 6px 10px;
+    margin: 0 2px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+}
+.action-btn:hover {
+    transform: translateY(-1px);
+    opacity: 0.9;
+}
+.edit-btn   { background: var(--info);    color: white; }
+.delete-btn { background: var(--danger);  color: white; }
+.reset-btn  { background: var(--warning); color: white; }
+
+/* employees table */
+.employees-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.employees-table th {
+    text-align: left;
+    padding: 12px;
+    background: rgba(0, 132, 61, 0.05);
+    color: var(--primary-green);
+    font-weight: 600;
+}
+.employees-table td {
+    padding: 12px;
+    border-bottom: 1px solid var(--light-border);
+    vertical-align: middle;
+}
+
+body.dark-mode .employees-table th { background: rgba(0, 132, 61, 0.2); }
+body.dark-mode .employees-table td { border-bottom-color: var(--dark-border); }
+body.dark-mode .edit-btn   { background: #2563eb; }
+body.dark-mode .delete-btn { background: #dc2626; }
+body.dark-mode .reset-btn  { background: #d97706; }
+
+/* form-control class - used in settings page inputs */
+.form-control {
+    padding: 8px 12px;
+    border: 1px solid var(--light-border);
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    background: var(--light-bg);
+    color: var(--light-text);
+    outline: none;
+    transition: border-color 0.2s;
+}
+.form-control:focus {
+    border-color: var(--primary-green);
+    box-shadow: 0 0 0 2px rgba(0, 132, 61, 0.15);
+}
+
+/* btn-sm for small buttons inside tables */
+.btn-sm {
+    padding: 5px 10px;
+    font-size: 12px;
+}

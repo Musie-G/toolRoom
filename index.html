@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethiopian Airlines - Toolroom System</title>
+
+    <!-- google fonts - inter for body, poppins for headings -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.min.css">
+
+    <link rel="stylesheet" href="asset/style.css">
+
+    <style>
+        /* logout btn override */
+        .btn-secondary.logout-btn { background: #f9f9f9; }
+        .sort-buttons { display: flex; gap: 10px; }
+    </style>
+</head>
+<body class="js-loading">
+
+<!-- sidebar -->
+<aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <div class="logo">ET</div>
+        <div class="logo-text">
+            <h2>Ethiopian</h2>
+            <p>Toolroom System</p>
+        </div>
+    </div>
+
+    <ul class="nav-menu" id="navMenu">
+        <!-- data-roles = who can see this link, checked by applyPermissions() in ui.js -->
+        <li>
+            <a href="#" class="nav-link active" data-roles="Admin,Toolkeeper,Technician" data-nav="dashboard">
+                <i class="fas fa-home nav-icon"></i><span class="nav-text">Dashboard</span>
+            </a>
+        </li>
+        <li>
+            <a href="#" class="nav-link" data-roles="Admin,Toolkeeper" data-nav="tools">
+                <i class="fas fa-tools nav-icon"></i><span class="nav-text">Inventory</span>
+            </a>
+        </li>
+        <li>
+            <a href="#" class="nav-link" data-roles="Admin,Toolkeeper,Technician" data-nav="checkout">
+                <i class="fas fa-sign-out-alt nav-icon"></i><span class="nav-text">Check Out</span>
+            </a>
+        </li>
+        <li>
+            <a href="#" class="nav-link" data-roles="Admin,Toolkeeper,Technician" data-nav="checkin">
+                <i class="fas fa-sign-in-alt nav-icon"></i><span class="nav-text">Check In</span>
+            </a>
+        </li>
+        <li>
+            <a href="#" class="nav-link" data-roles="Admin,Toolkeeper" data-nav="maintenance">
+                <i class="fas fa-wrench nav-icon"></i><span class="nav-text">Maintenance</span>
+            </a>
+        </li>
+        <li>
+            <a href="#" class="nav-link" data-roles="Admin" data-nav="employees">
+                <i class="fas fa-users nav-icon"></i><span class="nav-text">Employees</span>
+            </a>
+        </li>
+        <li>
+            <a href="#" class="nav-link" data-roles="Admin" data-nav="audit">
+                <i class="fas fa-history nav-icon"></i><span class="nav-text">Audit Log</span>
+            </a>
+        </li>
+        <li>
+            <a href="#" class="nav-link" data-roles="Admin" data-nav="settings">
+                <i class="fas fa-cog nav-icon"></i><span class="nav-text">Settings</span>
+            </a>
+        </li>
+    </ul>
+
+    <!-- current user + logout -->
+    <div style="padding: 15px; margin-top: auto; border-top: 1px solid var(--light-border);">
+        <div id="currentUserDisplay" style="font-weight:600; font-size:13px; margin-bottom:10px; word-break:break-word;">
+            Loading...
+        </div>
+        <button class="btn btn-secondary logout-btn" style="width:100%;" data-action="logout">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
+    </div>
+</aside>
+
+<main class="main-content" id="mainContent">
+
+    <!-- page title - set by navigate() in ui.js -->
+    <div id="page-header" style="display:none;"></div>
+
+    <!-- ============ DASHBOARD ============ -->
+    <div class="page active" id="dashboard-page">
+        <div class="stats-grid">
+            <div class="card stat-card">
+                <h3>Total Tools</h3>
+                <div class="stat-value" id="dashTotal">0</div>
+            </div>
+            <div class="card stat-card">
+                <h3>In Use</h3>
+                <div class="stat-value" id="dashInUse">0</div>
+            </div>
+            <div class="card stat-card">
+                <h3>Available</h3>
+                <div class="stat-value" id="dashAvail">0</div>
+            </div>
+            <div class="card stat-card">
+                <h3>Maintenance</h3>
+                <div class="stat-value" id="dashMaint">0</div>
+            </div>
+        </div>
+
+        <div class="stats-grid" style="margin-top:16px;">
+            <div class="card stat-card">
+                <h3>Total Employees</h3>
+                <div class="stat-value" id="dashEmployees">0</div>
+            </div>
+            <div class="card stat-card">
+                <h3>Overdue</h3>
+                <div class="stat-value" id="dashOverdue">0</div>
+            </div>
+            <!-- lost + damage added later when management asked for them -->
+            <div class="card stat-card">
+                <h3>Lost Tools</h3>
+                <div class="stat-value" id="dashLost">0</div>
+            </div>
+            <div class="card stat-card">
+                <h3>Total Damage</h3>
+                <div class="stat-value" id="dashDamage">0</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ INVENTORY ============ -->
+    <div class="page" id="tools-page">
+        <div class="card">
+            <div class="card-header">
+                <h3>Tool Inventory</h3>
+                <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                    <input type="text" id="toolSearchBox" placeholder="Search..." class="form-control" style="width:180px;" data-action="searchTools">
+                    <button class="btn btn-primary" data-action="openModal" data-modal="toolModal" id="addToolBtn">
+                        <i class="fas fa-plus"></i> Add Tool
+                    </button>
+                    <button class="btn btn-secondary" data-action="uploadExcel" id="uploadExcelBtn">
+                        <i class="fas fa-file-upload"></i> Upload Excel
+                    </button>
+                    <button class="btn btn-secondary" data-action="downloadTemplate">
+                        <i class="fas fa-download"></i> Template
+                    </button>
+                    <button class="btn btn-secondary" data-action="exportExcel" data-table="toolsTable" data-filename="Inventory">
+                        <i class="fas fa-file-excel"></i> Export
+                    </button>
+                </div>
+            </div>
+            <div class="table-container">
+                <table id="toolsTable">
+                    <thead>
+                        <tr>
+                            <th>Tool ID</th>
+                            <th>Name</th>
+                            <th>Department</th>
+                            <th>Status</th>
+                            <th>Location</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ CHECKOUT ============ -->
+    <div class="page" id="checkout-page">
+        <div class="checkout-grid">
+
+            <!-- left: list of available tools to pick from -->
+            <div class="card">
+                <div class="card-header">
+                    <h3>Available Tools</h3>
+                    <input type="text" id="checkoutFilterInput" placeholder="Filter..." class="form-control" style="width:150px;" data-action="filterCheckout">
+                </div>
+                <div class="table-container" style="max-height:500px; overflow-y:auto;">
+                    <table id="checkoutToolsTable">
+                        <thead>
+                            <tr>
+                                <th>&#10003;</th>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Dept</th>
+                                <th>Loc</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- right: the actual checkout form -->
+            <div class="card">
+                <div class="card-header"><h3>Checkout Form</h3></div>
+                <form id="checkoutForm" data-action="handleCheckout">
+                    <div class="form-group">
+                        <label>Employee</label>
+                        <select id="coEmployeeSelect" required></select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Work Order / Flight #</label>
+                        <input type="text" id="coWorkOrder" placeholder="e.g. WO-2024-0391" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Expected Return</label>
+                        <input type="date" id="coReturnDate" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            Selected Tools
+                            <span id="coSelectedCount" style="color:var(--primary-green); font-weight:700; margin-left:6px;">0</span>
+                        </label>
+                        <div id="coSelectedList" style="font-size:13px; color:var(--light-text-secondary); font-style:italic; min-height:36px; max-height:100px; overflow-y:auto; padding:6px 8px; border:1px dashed var(--light-border); border-radius:6px; background:#fafafa;">
+                            None selected
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">
+                        Confirm Checkout
+                    </button>
+                </form>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ============ CHECK-IN ============ -->
+    <div class="page" id="checkin-page">
+        <div class="card">
+            <div class="card-header">
+                <h3>Active Checkouts</h3>
+                <div style="display:flex; gap:8px;">
+                    <input type="text" id="checkinFilterInput" placeholder="Search checkouts..." class="form-control" style="width:200px;" data-action="filterCheckin">
+                    <button class="btn btn-primary" data-action="bulkReturn">
+                        <i class="fas fa-check-double"></i> Return Selected
+                    </button>
+                </div>
+            </div>
+            <div class="table-container">
+                <table id="checkinTable">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="selectAllCheckins" data-action="selectAllCheckins" title="Select all"></th>
+                            <th>Tool</th>
+                            <th>Employee</th>
+                            <th>Checked Out</th>
+                            <th>Due Back</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ MAINTENANCE ============ -->
+    <div class="page" id="maintenance-page">
+        <div class="card">
+            <div class="card-header">
+                <h3>Maintenance Queue</h3>
+                <button class="btn btn-secondary" data-action="exportExcel" data-table="maintenanceTable" data-filename="MaintenanceLog">
+                    <i class="fas fa-download"></i> Export
+                </button>
+            </div>
+            <div class="table-container">
+                <table id="maintenanceTable">
+                    <thead>
+                        <tr>
+                            <th>Tool</th>
+                            <th>Issue</th>
+                            <th>Reported</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ EMPLOYEES ============ -->
+    <div class="page" id="employees-page">
+        <div class="card">
+            <div class="card-header">
+                <h3>Employees</h3>
+                <button class="btn btn-primary" data-action="openModal" data-modal="employeeModal" id="addEmployeeBtn">
+                    <i class="fas fa-user-plus"></i> Add Employee
+                </button>
+            </div>
+            <div class="table-container">
+                <table id="employeesTable">
+                    <thead>
+                        <tr>
+                            <th>Badge #</th>
+                            <th>Name</th>
+                            <th>Department</th>
+                            <th>Tools Out</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ AUDIT LOG ============ -->
+    <div class="page" id="audit-page">
+        <div class="card">
+            <div class="card-header">
+                <h3>Audit Log</h3>
+                <div class="sort-buttons">
+                    <button class="sort-btn" data-action="sortAudit" data-order="desc">
+                        <i class="fas fa-arrow-down"></i> Newest first
+                    </button>
+                    <button class="sort-btn" data-action="sortAudit" data-order="asc">
+                        <i class="fas fa-arrow-up"></i> Oldest first
+                    </button>
+                </div>
+            </div>
+            <div id="auditLogContainer" style="max-height:600px; overflow-y:auto; background:var(--light-bg); border-radius:8px; border:1px solid var(--light-border); padding:4px 0;"></div>
+        </div>
+    </div>
+
+    <!-- ============ SETTINGS ============ -->
+    <!-- this page is long, sorry -->
+    <div class="page" id="settings-page">
+
+        <!-- role permissions -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-shield-alt" style="color:var(--primary-green)"></i> Role Permissions</h3>
+                <button class="btn btn-success" data-action="saveSettings">
+                    <i class="fas fa-save"></i> Save
+                </button>
+            </div>
+            <div class="settings-grid">
+
+                <div class="role-config">
+                    <h4><span class="role-icon admin"><i class="fas fa-crown"></i></span> Admin <span class="tag tag-success">Full Access</span></h4>
+                    <div class="permission-item"><label>All settings</label><input type="checkbox" checked disabled></div>
+                    <div class="permission-item"><label>Create/delete users</label><input type="checkbox" checked disabled></div>
+                    <div class="permission-item"><label>View audit logs</label><input type="checkbox" checked disabled></div>
+                    <div class="permission-item"><label>Reset data</label><input type="checkbox" checked disabled></div>
+                    <p style="color:var(--light-text-secondary); font-size:12px; margin-top:8px;">Admin permissions cannot be changed</p>
+                </div>
+
+                <div class="role-config">
+                    <h4><span class="role-icon toolkeeper"><i class="fas fa-tools"></i></span> Toolkeeper</h4>
+                    <div class="permission-item">
+                        <label>Add tools</label>
+                        <label class="switch"><input type="checkbox" id="tkCanAdd" checked><span class="slider"></span></label>
+                    </div>
+                    <div class="permission-item">
+                        <label>Edit tools</label>
+                        <label class="switch"><input type="checkbox" id="tkCanEdit" checked><span class="slider"></span></label>
+                    </div>
+                    <div class="permission-item">
+                        <label>Delete tools</label>
+                        <label class="switch"><input type="checkbox" id="tkCanDelete"><span class="slider"></span></label>
+                    </div>
+                    <div class="permission-item">
+                        <label>Manage maintenance</label>
+                        <label class="switch"><input type="checkbox" id="tkCanMaint" checked><span class="slider"></span></label>
+                    </div>
+                    <div class="permission-item">
+                        <label>Export reports</label>
+                        <label class="switch"><input type="checkbox" id="tkCanExport" checked><span class="slider"></span></label>
+                    </div>
+                </div>
+
+                <div class="role-config">
+                    <h4><span class="role-icon technician"><i class="fas fa-user-cog"></i></span> Technician</h4>
+                    <div class="permission-item">
+                        <label>Check out tools</label>
+                        <label class="switch"><input type="checkbox" id="techCanCheckout" checked><span class="slider"></span></label>
+                    </div>
+                    <div class="permission-item">
+                        <label>Check in tools</label>
+                        <label class="switch"><input type="checkbox" id="techCanCheckin" checked><span class="slider"></span></label>
+                    </div>
+                    <div class="permission-item">
+                        <label>Report issues</label>
+                        <label class="switch"><input type="checkbox" id="techCanReport" checked><span class="slider"></span></label>
+                    </div>
+                    <div class="permission-item">
+                        <label>View inventory</label>
+                        <label class="switch"><input type="checkbox" id="techCanView" checked><span class="slider"></span></label>
+                    </div>
+                    <div class="permission-item">
+                        <label>Request purchases</label>
+                        <label class="switch"><input type="checkbox" id="techCanRequest"><span class="slider"></span></label>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- approval workflows -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-check-double" style="color:var(--primary-green)"></i> Approval Workflows</h3>
+            </div>
+
+            <div class="settings-section">
+                <h4>Checkout Approvals</h4>
+
+                <div class="permission-item">
+                    <label>Require approval for high-value tools</label>
+                    <label class="switch"><input type="checkbox" id="needsHighValueApproval"><span class="slider"></span></label>
+                </div>
+
+                <div class="threshold-item">
+                    <label>High-value threshold ($)</label>
+                    <input type="number" id="highValueCutoff" value="1000" min="100" step="50" class="form-control">
+                </div>
+
+                <div class="permission-item">
+                    <label>Supervisor approval for overtime checkouts</label>
+                    <label class="switch"><input type="checkbox" id="needsOvertimeApproval"><span class="slider"></span></label>
+                </div>
+
+                <div class="permission-item">
+                    <label>Manager approval for maintenance requests</label>
+                    <label class="switch"><input type="checkbox" id="needsMaintApproval"><span class="slider"></span></label>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h4>Limits</h4>
+
+                <div class="threshold-item">
+                    <label>Max tools per checkout</label>
+                    <input type="number" id="maxToolsAtOnce" value="10" min="1" max="50" class="form-control">
+                </div>
+
+                <div class="threshold-item">
+                    <label>Max checkout duration (days)</label>
+                    <input type="number" id="maxDaysOut" value="14" min="1" max="90" class="form-control">
+                </div>
+
+                <div class="permission-item">
+                    <label>Allow weekend checkouts</label>
+                    <label class="switch"><input type="checkbox" id="allowWeekends" checked><span class="slider"></span></label>
+                </div>
+            </div>
+        </div>
+
+        <!-- who can add tools -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-plus-circle" style="color:var(--primary-green)"></i> Tool Addition</h3>
+            </div>
+
+            <div class="settings-section">
+                <h4>Who can add tools?</h4>
+                <div class="permission-item">
+                    <label><input type="radio" name="toolAddPermission" value="admin"> Admins only</label>
+                </div>
+                <div class="permission-item">
+                    <label><input type="radio" name="toolAddPermission" value="both" checked> Admins + Toolkeepers</label>
+                </div>
+                <div class="permission-item">
+                    <label><input type="radio" name="toolAddPermission" value="all"> Anyone (techs submit requests)</label>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h4>Approval</h4>
+                <div class="permission-item">
+                    <label>Require approval before tool is added</label>
+                    <label class="switch"><input type="checkbox" id="needsToolApproval"><span class="slider"></span></label>
+                </div>
+                <div id="approvalSettings" style="display:none; margin-top:12px; padding-left:8px;">
+                    <p style="font-size:13px; margin-bottom:8px;">Who can approve:</p>
+                    <div class="permission-item"><label><input type="checkbox" value="admin" checked> Administrators</label></div>
+                    <div class="permission-item"><label><input type="checkbox" value="toolkeeper" checked> Toolkeepers</label></div>
+                    <div class="permission-item"><label><input type="checkbox" value="manager"> Dept Managers</label></div>
+                </div>
+            </div>
+
+            <!-- departments and categories -->
+            <div class="settings-section">
+                <h4>Departments</h4>
+                <div id="departmentList"></div>
+                <div style="display:flex; gap:8px; margin-top:10px;">
+                    <input type="text" id="newDeptName" placeholder="Department name" class="form-control">
+                    <button class="btn btn-secondary" data-action="addDepartment"><i class="fas fa-plus"></i></button>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h4>Tool Categories</h4>
+                <div id="categoryList"></div>
+                <div style="display:flex; gap:8px; margin-top:10px;">
+                    <input type="text" id="newCategoryName" placeholder="Category name" class="form-control">
+                    <button class="btn btn-secondary" data-action="addCategory"><i class="fas fa-plus"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <!-- alerts -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-bell" style="color:var(--primary-green)"></i> Alerts</h3>
+            </div>
+
+            <div class="settings-section">
+                <h4>Low Stock</h4>
+                <div class="permission-item">
+                    <label>Enable low stock alerts</label>
+                    <label class="switch"><input type="checkbox" id="lowStockAlertsOn" checked><span class="slider"></span></label>
+                </div>
+                <div class="threshold-item">
+                    <label>Minimum quantity before alert</label>
+                    <input type="number" id="lowStockMin" value="5" min="1" class="form-control">
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h4>Maintenance</h4>
+                <div class="permission-item">
+                    <label>Alert if tool in maintenance > 7 days</label>
+                    <label class="switch"><input type="checkbox" id="longMaintAlertOn" checked><span class="slider"></span></label>
+                </div>
+                <div class="permission-item">
+                    <label>Preventive maintenance reminders</label>
+                    <label class="switch"><input type="checkbox" id="preventiveMaintOn"><span class="slider"></span></label>
+                </div>
+                <div class="threshold-item">
+                    <label>Remind N days before due</label>
+                    <input type="number" id="maintLeadDays" value="7" min="1" class="form-control">
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h4>Calibration / Expiry</h4>
+                <div class="permission-item">
+                    <label>Track calibration expiry dates</label>
+                    <label class="switch"><input type="checkbox" id="expiryTrackingOn"><span class="slider"></span></label>
+                </div>
+                <div class="threshold-item">
+                    <label>Warn N days before expiry</label>
+                    <input type="number" id="expiryWarningDays" value="30" min="1" class="form-control">
+                </div>
+            </div>
+        </div>
+
+        <!-- notifications -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-envelope" style="color:var(--primary-green)"></i> Notifications</h3>
+            </div>
+
+            <div class="settings-section">
+                <h4>How to notify</h4>
+
+                <div class="notification-method">
+                    <input type="checkbox" id="notifyByEmail" checked>
+                    <label>Email</label>
+                    <input type="email" id="notifEmailAddr" placeholder="admin@ethiopianairlines.com" class="form-control" style="width:260px;">
+                </div>
+
+                <div class="notification-method">
+                    <input type="checkbox" id="notifyBySMS">
+                    <label>SMS</label>
+                    <input type="text" id="notifPhoneNum" placeholder="+251..." class="form-control" style="width:200px;">
+                </div>
+
+                <div class="notification-method">
+                    <input type="checkbox" id="notifyOnDashboard" checked>
+                    <label>Dashboard banner</label>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h4>Send alerts when...</h4>
+                <div class="permission-item">
+                    <label>Tool checked out</label>
+                    <label class="switch"><input type="checkbox" id="alertOnCheckout"><span class="slider"></span></label>
+                </div>
+                <div class="permission-item">
+                    <label>Tool overdue</label>
+                    <label class="switch"><input type="checkbox" id="alertOnOverdue" checked><span class="slider"></span></label>
+                </div>
+                <div class="permission-item">
+                    <label>Maintenance flagged</label>
+                    <label class="switch"><input type="checkbox" id="alertOnMaint" checked><span class="slider"></span></label>
+                </div>
+                <div class="permission-item">
+                    <label>New tool added</label>
+                    <label class="switch"><input type="checkbox" id="alertOnNewTool"><span class="slider"></span></label>
+                </div>
+            </div>
+        </div>
+
+        <!-- backup -->
+        <div class="card">
+            <div class="card-header">
+                <h3><i class="fas fa-database" style="color:var(--primary-green)"></i> Backup & Restore</h3>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn btn-primary" data-action="createBackup"><i class="fas fa-save"></i> Backup Now</button>
+                    <button class="btn btn-secondary" data-action="restoreBackup"><i class="fas fa-undo"></i> Restore</button>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h4>Automatic Backups</h4>
+                <div class="permission-item">
+                    <label>Enable scheduled backups</label>
+                    <label class="switch"><input type="checkbox" id="autoBackupOn" checked><span class="slider"></span></label>
+                </div>
+                <div class="threshold-item">
+                    <label>Run backups</label>
+                    <select id="backupFreqSelect" class="form-control" style="width:140px;">
+                        <option value="daily">Daily</option>
+                        <option value="weekly" selected>Weekly</option>
+                        <option value="monthly">Monthly</option>
+                    </select>
+                </div>
+                <div class="threshold-item">
+                    <label>Keep for (days)</label>
+                    <input type="number" id="backupKeepDays" value="30" min="7" class="form-control">
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h4>Recent Backups</h4>
+                <div id="backupList">
+                    <!-- populated by ui.js drawBackupList() -->
+                </div>
+            </div>
+        </div>
+
+        <!-- data management / danger zone -->
+        <div class="card" style="border-left: 3px solid var(--danger);">
+            <div class="card-header">
+                <h3><i class="fas fa-exclamation-triangle" style="color:var(--danger)"></i> Data Management</h3>
+            </div>
+            <div style="display:flex; gap:12px; flex-wrap:wrap; padding: 0 4px;">
+                <button class="btn btn-warning" data-action="archiveOldData"><i class="fas fa-archive"></i> Archive Old Data</button>
+                <button class="btn btn-danger" data-action="resetData"><i class="fas fa-trash-alt"></i> Reset All Data</button>
+                <button class="btn btn-secondary" data-action="exportAllData"><i class="fas fa-file-export"></i> Export Everything</button>
+            </div>
+            <p style="margin-top:14px; font-size:13px; color:var(--danger);">
+                ⚠ Reset wipes everything. Make a backup first.
+            </p>
+        </div>
+
+    </div><!-- end settings-page -->
+
+</main><!-- end main-content -->
+
+
+<!-- ============================================================ -->
+<!-- MODALS                                                       -->
+<!-- ============================================================ -->
+
+<!-- add / edit tool -->
+<div class="modal" id="toolModal">
+    <div class="modal-content">
+        <button class="close-modal" data-action="closeModal" data-modal="toolModal">&times;</button>
+        <h2 style="margin-bottom:20px; color:var(--primary-green);">Tool Details</h2>
+        <form id="toolForm" data-action="saveTool">
+            <input type="hidden" id="toolId">
+            <div class="form-group">
+                <label>Tool Name <span style="color:var(--danger)">*</span></label>
+                <input type="text" id="toolName" required>
+            </div>
+            <div class="form-group">
+                <label>Internal ID / Barcode <span style="color:var(--danger)">*</span></label>
+                <input type="text" id="toolInternalId" required>
+            </div>
+            <div class="form-group">
+                <label>Department</label>
+                <select id="toolDept"></select>
+            </div>
+            <div class="form-group">
+                <label>Category</label>
+                <select id="toolCategory"></select>
+            </div>
+            <div class="form-group">
+                <label>Location (shelf/bin)</label>
+                <input type="text" id="toolLoc" placeholder="e.g. A3-Shelf2">
+            </div>
+            <!-- purchase info - optional but useful for finance -->
+            <div class="form-group">
+                <label>Purchase Date</label>
+                <input type="date" id="toolPurchaseDate">
+            </div>
+            <div class="form-group">
+                <label>Purchase Price ($)</label>
+                <input type="number" id="toolPrice" step="0.01" min="0" placeholder="0.00">
+            </div>
+            <div class="form-group">
+                <label>Calibration Due</label>
+                <input type="date" id="toolCalibrationDue">
+            </div>
+            <div class="form-group">
+                <label>Manufacturer</label>
+                <input type="text" id="toolManufacturer">
+            </div>
+            <div class="form-group">
+                <label>Model / Part #</label>
+                <input type="text" id="toolModel">
+            </div>
+            <div class="form-group">
+                <label>Notes</label>
+                <textarea id="toolNotes" rows="3" placeholder="Any extra info..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;">Save Tool</button>
+        </form>
+    </div>
+</div>
+
+<!-- add / edit employee -->
+<div class="modal" id="employeeModal">
+    <div class="modal-content">
+        <button class="close-modal" data-action="closeModal" data-modal="employeeModal">&times;</button>
+        <h2 style="margin-bottom:20px;">Employee</h2>
+        <form id="employeeForm" data-action="saveEmployee">
+            <input type="hidden" id="employeeId">
+            <div class="form-group">
+                <label>Full Name <span style="color:var(--danger)">*</span></label>
+                <input type="text" id="employeeName" required>
+            </div>
+            <div class="form-group">
+                <label>Badge # <span style="color:var(--danger)">*</span></label>
+                <input type="text" id="employeeBadge" required>
+            </div>
+            <div class="form-group">
+                <label>Department</label>
+                <select id="employeeDept"></select>
+            </div>
+            <div class="form-group">
+                <label>Role</label>
+                <select id="employeeRole">
+                    <option>Technician</option>
+                    <option>Supervisor</option>
+                    <option>Manager</option>
+                    <option>Toolkeeper</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="employeeEmail">
+            </div>
+            <div class="form-group">
+                <label>Phone</label>
+                <input type="text" id="employeePhone" placeholder="+251...">
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;">Save</button>
+        </form>
+    </div>
+</div>
+
+<!-- return tool - condition + damage reporting -->
+<div class="modal" id="returnModal">
+    <div class="modal-content">
+        <button class="close-modal" data-action="closeModal" data-modal="returnModal">&times;</button>
+        <h2 style="margin-bottom:12px;">Return Tool</h2>
+        <div id="returnToolName" style="margin-bottom:16px; font-weight:600; color:var(--primary-green);"></div>
+        <form id="returnForm" data-action="confirmReturn">
+            <input type="hidden" id="returnCheckoutId">
+            <div class="form-group">
+                <label>Condition</label>
+                <select id="returnCondition">
+                    <option value="Good">Good - no issues</option>
+                    <option value="Poor">Damaged / needs repair</option>
+                    <option value="Lost">Lost / missing</option>
+                </select>
+            </div>
+            <div class="form-group" id="damageNoteGroup" style="display:none;">
+                <label>Describe the damage</label>
+                <textarea id="returnNote" rows="3" placeholder="What happened to it?"></textarea>
+            </div>
+            <div class="form-group" id="totalDamageGroup" style="display:none;">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                    <input type="checkbox" id="totalDamageCheckbox">
+                    Mark as total loss (remove from inventory)
+                </label>
+                <small style="color:var(--danger); display:block; margin-top:4px;">This cannot be undone.</small>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%; margin-top:8px;">Confirm Return</button>
+        </form>
+    </div>
+</div>
+
+<!-- change password - for non-admin users mainly -->
+<div class="modal" id="changePasswordModal">
+    <div class="modal-content">
+        <button class="close-modal" data-action="closeModal" data-modal="changePasswordModal">&times;</button>
+        <h2 style="margin-bottom:20px;">Change Password</h2>
+        <form id="changePasswordForm" data-action="changePassword">
+            <div class="form-group">
+                <label>Current Password</label>
+                <input type="password" id="currentPassword" required>
+            </div>
+            <div class="form-group">
+                <label>New Password</label>
+                <input type="password" id="newPassword" required>
+            </div>
+            <div class="form-group">
+                <label>Confirm New Password</label>
+                <input type="password" id="confirmPassword" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;">Update Password</button>
+        </form>
+    </div>
+</div>
+
+
+<!-- scripts - order matters, dont rearrange -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.32/dist/sweetalert2.all.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script src="state.js"></script>
+<script src="api.js"></script>
+<script src="ui.js"></script>
+<script src="events.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ET Toolroom - Login</title>
+
+    <!-- same fonts as the main app -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* i know inline styles are bad but this page is standalone */
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #00843D 0%, #005c2e 100%);
+        }
+
+        .loginBox {
+            background: white;
+            border-radius: 28px;
+            padding: 45px 40px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 25px 45px -12px rgba(0,0,0,0.25);
+        }
+
+        .logoArea {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        /* the ET badge */
+        .etBadge {
+            width: 75px;
+            height: 75px;
+            background: linear-gradient(135deg, #00843D, #FDB913);
+            border-radius: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 18px;
+            font-size: 36px;
+            font-weight: bold;
+            color: white;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+
+        .logoArea h2 {
+            font-size: 26px;
+            color: #1e293b;
+            margin-bottom: 5px;
+        }
+
+        .logoArea p {
+            color: #64748b;
+            font-size: 14px;
+        }
+
+        .field {
+            margin-bottom: 22px;
+        }
+
+        .field label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 13px;
+            color: #334155;
+        }
+
+        .fieldWrap {
+            position: relative;
+        }
+
+        .fieldWrap i {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+            font-size: 16px;
+            pointer-events: none;
+        }
+
+        .fieldWrap input {
+            width: 100%;
+            padding: 13px 15px 13px 44px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 14px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        .fieldWrap input:focus {
+            outline: none;
+            border-color: #00843D;
+            box-shadow: 0 0 0 3px rgba(0,132,61,0.1);
+        }
+
+        #loginBtn {
+            width: 100%;
+            padding: 14px;
+            background: #00843D;
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: inherit;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: background 0.15s, transform 0.1s;
+        }
+
+        #loginBtn:hover:not(:disabled) {
+            background: #006633;
+            transform: translateY(-1px);
+        }
+
+        #loginBtn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        #errorMsg {
+            display: none;
+            margin-top: 18px;
+            padding: 11px 14px;
+            background: #fef2f2;
+            color: #dc2626;
+            border-left: 3px solid #dc2626;
+            border-radius: 10px;
+            font-size: 13px;
+        }
+
+        #errorMsg.show {
+            display: block;
+            animation: nudge 0.25s ease;
+        }
+
+        @keyframes nudge {
+            0%,100% { transform: translateX(0); }
+            30%      { transform: translateX(-6px); }
+            70%      { transform: translateX(6px); }
+        }
+
+        .links {
+            text-align: center;
+            margin-top: 26px;
+            font-size: 13px;
+        }
+
+        .links a { color: #64748b; text-decoration: none; }
+        .links a:hover { color: #00843D; }
+        .links span { color: #cbd5e1; margin: 0 8px; }
+
+        @media (max-width: 480px) {
+            .loginBox { padding: 30px 20px; border-radius: 20px; }
+            .etBadge { width: 60px; height: 60px; font-size: 28px; }
+            .logoArea h2 { font-size: 22px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="loginBox">
+    <div class="logoArea">
+        <div class="etBadge">ET</div>
+        <h2>Welcome back</h2>
+        <p>Sign in to the toolroom</p>
+    </div>
+
+    <form id="loginForm">
+        <div class="field">
+            <label for="empId">Employee ID / Badge</label>
+            <div class="fieldWrap">
+                <i class="fas fa-id-card"></i>
+                <input type="text" id="empId" placeholder="e.g. EMP001 or 12345" autocomplete="off">
+            </div>
+        </div>
+
+        <div class="field">
+            <label for="pwd">Password</label>
+            <div class="fieldWrap">
+                <i class="fas fa-lock"></i>
+                <input type="password" id="pwd" placeholder="Enter your password">
+            </div>
+        </div>
+
+        <button type="submit" id="loginBtn">
+            <i class="fas fa-sign-in-alt"></i> Login
+        </button>
+
+        <div id="errorMsg"></div>
+    </form>
+
+    <div class="links">
+        <a href="#" onclick="alert('Contact IT: ext. 1234')">Forgot password?</a>
+        <span>|</span>
+        <a href="#" onclick="alert('Ask your supervisor or toolroom manager')">Need help?</a>
+    </div>
+</div>
+
+<script>
+// login.html - auth page
+// finally got this stable after the session variable mismatch issue
+
+var form    = document.getElementById('loginForm');
+var badgeEl = document.getElementById('empId');
+var passEl  = document.getElementById('pwd');
+var errEl   = document.getElementById('errorMsg');
+var btn     = document.getElementById('loginBtn');
+var btnOrig = btn.innerHTML; // save it so we can restore after loading state
+
+function showErr(msg) {
+    errEl.innerHTML = '<i class="fas fa-exclamation-circle"></i> ' + msg;
+    errEl.classList.add('show');
+}
+
+function hideErr() {
+    errEl.classList.remove('show');
+}
+
+form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    hideErr();
+
+    var badge    = badgeEl.value.trim();
+    var password = passEl.value;
+
+    if (!badge) {
+        showErr('Please enter your employee ID');
+        badgeEl.focus();
+        return;
+    }
+    if (!password) {
+        showErr('Password is required');
+        passEl.focus();
+        return;
+    }
+
+    // loading state
+    btn.disabled  = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Authenticating...';
+
+    try {
+        var resp = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ badge: badge, password: password })
+        });
+
+        // php sometimes returns html on fatal errors - catch that
+        var data;
+        try {
+            data = await resp.json();
+        } catch (jsonErr) {
+            console.error('login returned non-JSON:', jsonErr);
+            showErr('Server error. Please try again.');
+            btn.disabled  = false;
+            btn.innerHTML = btnOrig;
+            return;
+        }
+
+        if (data.success && data.token) {
+            // store JWT for all future requests
+            localStorage.setItem('toolroom_token', data.token);
+            window.location.href = 'index.html';
+        } else {
+            showErr(data.error || 'Invalid credentials');
+            btn.disabled  = false;
+            btn.innerHTML = btnOrig;
+            passEl.value  = '';
+            passEl.focus();
+        }
+
+    } catch (netErr) {
+        console.error('login fetch error:', netErr);
+        showErr('Connection failed. Check your network.');
+        btn.disabled  = false;
+        btn.innerHTML = btnOrig;
+    }
+});
+
+// highlight icon when field is focused
+document.querySelectorAll('.fieldWrap input').forEach(function(inp) {
+    inp.addEventListener('focus', function() {
+        var icon = this.parentElement.querySelector('i');
+        if (icon) icon.style.color = '#00843D';
+    });
+    inp.addEventListener('blur', function() {
+        var icon = this.parentElement.querySelector('i');
+        if (icon) icon.style.color = '#94a3b8';
+    });
+});
+
+// clear error when user starts editing
+badgeEl.addEventListener('input', hideErr);
+passEl.addEventListener('input',  hideErr);
+
+// dev mode hint - remove before handing over
+if (window.location.hostname === 'localhost') {
+    console.log('test accounts: 22500/siyum123  |  REDIEAT/redieat456  |  38011/musieG123');
+}
+</script>
+
+</body>
+</html>
