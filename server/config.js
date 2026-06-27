@@ -1,43 +1,45 @@
 // config.js
-// mysql2 connection pool - shared across all routes
-// using a pool so we dont open a new connection on every request
-// XAMPP default is root with no password
-// if you set a password in phpMyAdmin you need to update DB_PASS in .env
+// mysql connection pool
+// pool means we reuse connections instead of opening a new one every request
+// xampp root password is empty by default - set DB_PASS in .env if you changed it
+// railway mysql requires ssl - enabled when NODE_ENV=production
 
 require('dotenv').config();
 const mysql = require('mysql2/promise');
 
-var pool;
+var pool = null;
 
 async function connectDB() {
     try {
+        // ssl is needed for railway, not for local xampp
+        var isProduction = process.env.NODE_ENV === 'production';
+
         pool = mysql.createPool({
             host:     process.env.DB_HOST || 'localhost',
             port:     process.env.DB_PORT || 3306,
             database: process.env.DB_NAME || 'Manage_tool',
             user:     process.env.DB_USER || 'root',
             password: process.env.DB_PASS || '',
-            // keep connections alive - hangar wifi drops a lot
+            ssl: isProduction ? { rejectUnauthorized: false } : false,
             waitForConnections: true,
-            connectionLimit:    10,
-            queueLimit:         0
+            connectionLimit: 10,
+            queueLimit: 0
         });
 
-        // test the connection
-        const conn = await pool.getConnection();
-        console.log('mysql connected:', process.env.DB_HOST || 'localhost', '/', process.env.DB_NAME || 'Manage_tool');
+        // quick test so we know the connection works on startup
+        var conn = await pool.getConnection();
+        console.log('mysql connected to', process.env.DB_NAME || 'Manage_tool');
         conn.release();
 
     } catch (err) {
-        console.error('mysql connection failed:', err.message);
+        console.error('mysql failed to connect:', err.message);
+        // no db = no app, bail out
         process.exit(1);
     }
 }
 
-// getDB() is how routes access the pool
-// returns the pool directly so routes can use pool.query() or pool.execute()
 function getDB() {
-    if (!pool) throw new Error('DB not initialized - call connectDB() first');
+    if (!pool) throw new Error('db not ready - connectDB() hasnt been called');
     return pool;
 }
 
